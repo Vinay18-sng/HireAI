@@ -4,7 +4,7 @@ HireAI is a premium, full-stack HR-tech web application that automates candidate
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 * **Multi-Model AI Scoring Engine:** Evaluates applicants based on skill alignment, experience years, education rankings, and assessment test scores.
 * **Random Forest ML Classification:** Trained on-the-fly using a realistic candidate dataset of 400 records to calculate suitability probability scores.
@@ -17,7 +17,7 @@ HireAI is a premium, full-stack HR-tech web application that automates candidate
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Frontend:** Semantic HTML5, Custom Styled Premium White/Slate/Blue Light Theme SaaS CSS, Vanilla JavaScript
 * **Backend:** Python + FastAPI
@@ -29,7 +29,7 @@ HireAI is a premium, full-stack HR-tech web application that automates candidate
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```bash
 HireAI/
@@ -82,7 +82,7 @@ HireAI/
 
 ---
 
-## 🔑 Demo Access Credentials
+##  Demo Access Credentials
 
 The database comes pre-seeded with these credentials. Click the autofill buttons on the login page to sign in instantly:
 
@@ -146,7 +146,7 @@ Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
 
 ---
 
-## 🧠 How the AI Score Works
+##  How the AI Score Works
 
 Each time a candidate applies or their assessment scores are updated, a composite score (0-100) is calculated:
 
