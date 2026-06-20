@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard – HireAI{% endblock %}
+{% block page_header %}Admin Console{% endblock %}
+
+{% block content %}
+<div class="dashboard-stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Recruiters</h3>
+            <div class="stat-number">{{ stats.recruiters }}</div>
+        </div>
+        <div class="stat-icon-wrapper icon-primary">
+            <i class="fa-solid fa-building-user"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Candidates</h3>
+            <div class="stat-number">{{ stats.candidates }}</div>
+        </div>
+        <div class="stat-icon-wrapper icon-success">
+            <i class="fa-solid fa-users"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Total Jobs</h3>
+            <div class="stat-number">{{ stats.jobs }}</div>
+        </div>
+        <div class="stat-icon-wrapper icon-info">
+            <i class="fa-solid fa-briefcase"></i>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Applications</h3>
+            <div class="stat-number">{{ stats.applications }}</div>
+        </div>
+        <div class="stat-icon-wrapper icon-warning">
+            <i class="fa-solid fa-file-invoice"></i>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Active Recruiters Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Registered Recruiters</h3>
+            <a href="/admin/recruiters" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Designation</th>
+                        <th>User Account</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in active_recruiters %}
+                        <tr>
+                            <td><strong>{{ r.company_name }}</strong></td>
+                            <td>{{ r.designation or "N/A" }}</td>
+                            <td>{{ r.user.name }} ({{ r.user.email }})</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted);">No recruiters registered yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Job Postings -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Job Postings</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Last 5 jobs</span>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Department</th>
+                        <th>Posted By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for j in recent_jobs %}
+                        <tr>
+                            <td><strong>{{ j.title }}</strong></td>
+                            <td><span class="badge badge-applied" style="background-color: var(--primary-glow); color: var(--primary-color);">{{ j.department }}</span></td>
+                            <td>{{ j.recruiter.company_name }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted);">No jobs posted yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

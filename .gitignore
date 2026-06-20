@@ -1,0 +1,32 @@
+# Python Cache and Compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Databases
+*.db
+*.sqlite
+hireai.db
+
+# Environment variables / secrets
+.env
+
+# Application uploads and generated models
+app/uploads/
+app/ml_model.pkl
+
+# IDE / Editor configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{% if job %}Edit Job #{{ job.job_id }}{% else %}Post a Job{% endif %} – HireAI{% endblock %}
+{% block page_header %}{% if job %}Edit Job Opening{% else %}Create a Job Opening{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{% if job %}Modify Job Details & AI Weights{% else %}Define Job Details & AI Scoring Weights{% endif %}</h3>
+        <a href="/recruiter/jobs" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to List</a>
+    </div>
+    
+    <form action="{% if job %}/recruiter/jobs/edit/{{ job.job_id }}{% else %}/recruiter/jobs/new{% endif %}" method="POST" onsubmit="return validateWeights();">
+        
+        <!-- Part 1: Job Meta Info -->
+        <h3 style="font-size: 1.1rem; color: var(--primary-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-file-invoice"></i> 1. Job Description & Requirements
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="title">Job Title</label>
+                <input type="text" id="title" name="title" value="{{ job.title if job else '' }}" class="form-control" placeholder="Senior Software Engineer" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="department" value="{{ job.department if job else '' }}" class="form-control" placeholder="Engineering" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="min_education">Minimum Education Required</label>
+                <select id="min_education" name="min_education" class="form-control" required>
+                    <option value="Diploma" {% if job and job.min_education == 'Diploma' %}selected{% endif %}>Diploma</option>
+                    <option value="Bachelor" {% if not job or job.min_education == 'Bachelor' %}selected{% endif %}>Bachelor / B.Tech / B.S.</option>
+                    <option value="Master" {% if job and job.min_education == 'Master' %}selected{% endif %}>Master / M.Tech / M.S.</option>
+                    <option value="PhD" {% if job and job.min_education == 'PhD' %}selected{% endif %}>PhD / Doctorate</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="min_experience">Minimum Experience Required (Years)</label>
+                <input type="number" id="min_experience" name="min_experience" min="0" max="30" value="{{ job.min_experience if job else 0 }}" class="form-control" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="required_skills">Required Skills (Comma separated list)</label>
+            <input type="text" id="required_skills" name="required_skills" value="{{ job.required_skills if job else '' }}" class="form-control" placeholder="Python, FastAPI, SQL, AWS, Git" required>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">These skills will be matched against candidate profiles to generate the Skill Match Score.</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="preferred_certifications">Preferred Certifications (Comma separated list)</label>
+            <input type="text" id="preferred_certifications" name="preferred_certifications" value="{{ job.preferred_certifications if job else '' }}" class="form-control" placeholder="AWS Certified Solutions Architect, Certified Scrum Master">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Full Job Description</label>
+            <textarea id="description" name="description" class="form-control" style="min-height: 150px;" placeholder="Describe responsibilities, expectations, and benefits..." required>{{ job.description if job else '' }}</textarea>
+        </div>
+        
+        <!-- Part 2: AI Weights Info -->
+        <h3 style="font-size: 1.1rem; color: var(--primary-color); margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-sliders"></i> 2. Hybrid AI Fit Engine Weights Configuration
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Configure the importance weights of candidate assessment categories. **The weights should ideally sum to 1.0** (e.g. 0.10 + 0.20 + 0.20 + 0.20 + 0.10 + 0.10 + 0.10 = 1.0). If they do not, the system will automatically normalize them.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label for="weight_skills">Skills Match Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_skills" name="weight_skills" value="{{ job.weight_skills if job else 0.20 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_coding">Coding Assessment Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_coding" name="weight_coding" value="{{ job.weight_coding if job else 0.20 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_technical">Technical Interview Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_technical" name="weight_technical" value="{{ job.weight_technical if job else 0.20 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_hr">HR Interview Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_hr" name="weight_hr" value="{{ job.weight_hr if job else 0.10 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_projects">Projects completeness Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_projects" name="weight_projects" value="{{ job.weight_projects if job else 0.10 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_certifications">Certifications Relevance Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_certifications" name="weight_certifications" value="{{ job.weight_certifications if job else 0.10 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight_resume">Profile completeness Weight</label>
+                <input type="number" step="0.01" min="0" max="1" id="weight_resume" name="weight_resume" value="{{ job.weight_resume if job else 0.10 }}" class="form-control weight-input" onchange="updateTotalWeight()">
+            </div>
+        </div>
+        
+        <!-- Weight status helper -->
+        <div style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 0.9rem;">Composite Weight Sum:</span>
+            <span id="weightSumBadge" class="badge badge-shortlisted" style="font-size: 0.9rem; font-weight: 700;">1.00</span>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="float: right; margin-top: 1.5rem; padding: 0.75rem 2rem;">
+            <i class="fa-solid fa-floppy-disk"></i> {% if job %}Save Job Changes{% else %}Publish Job Post{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateTotalWeight() {
+    const inputs = document.querySelectorAll('.weight-input');
+    let sum = 0.0;
+    inputs.forEach(input => {
+        sum += parseFloat(input.value) || 0.0;
+    });
+    
+    const badge = document.getElementById('weightSumBadge');
+    badge.innerText = sum.toFixed(2);
+    
+    // Change style based on sum
+    if (Math.abs(sum - 1.0) < 0.001) {
+        badge.className = "badge badge-selected";
+        badge.style.backgroundColor = "var(--success-bg)";
+        badge.style.color = "var(--success-color)";
+    } else {
+        badge.className = "badge badge-consider";
+        badge.style.backgroundColor = "var(--warning-bg)";
+        badge.style.color = "var(--warning-color)";
+    }
+}
+
+function validateWeights() {
+    const inputs = document.querySelectorAll('.weight-input');
+    let sum = 0.0;
+    inputs.forEach(input => {
+        sum += parseFloat(input.value) || 0.0;
+    });
+    
+    if (Math.abs(sum - 1.0) > 0.001) {
+        return confirm("The weights sum up to " + sum.toFixed(2) + " instead of 1.00. The backend will automatically normalize them to sum to 1.00. Do you wish to proceed?");
+    }
+    return true;
+}
+
+// Run initially
+updateTotalWeight();
+</script>
+{% endblock %}

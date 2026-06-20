@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Register Account – HireAI{% endblock %}
+{% block page_header %}Create Account{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Get Started</h1>
+            <p class="auth-subtitle">Join HireAI to start recruiting or applying</p>
+        </div>
+        
+        <form action="/auth/register" method="POST">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="John Doe" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="john@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="role">Register As</label>
+                <select id="role" name="role" class="form-control" onchange="toggleRoleFields()" required>
+                    <option value="candidate" selected>Candidate (Job Seeker)</option>
+                    <option value="recruiter">Recruiter (Employer)</option>
+                </select>
+            </div>
+            
+            <!-- Recruiter Fields (Initially Hidden) -->
+            <div id="recruiterFields" style="display: none;">
+                <div class="form-group">
+                    <label for="company_name">Company Name</label>
+                    <input type="text" id="company_name" name="company_name" class="form-control" placeholder="TechSolutions Inc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="designation">Designation</label>
+                    <input type="text" id="designation" name="designation" class="form-control" placeholder="Talent Acquisition Partner">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">
+                <i class="fa-solid fa-user-plus"></i> Create Account
+            </button>
+        </form>
+        
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
+            <span style="color: var(--text-secondary);">Already registered? </span>
+            <a href="/login">Sign in instead</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleRoleFields() {
+    const roleSelect = document.getElementById('role');
+    const recruiterFields = document.getElementById('recruiterFields');
+    const companyInput = document.getElementById('company_name');
+    
+    if (roleSelect.value === 'recruiter') {
+        recruiterFields.style.display = 'block';
+        companyInput.setAttribute('required', 'required');
+    } else {
+        recruiterFields.style.display = 'none';
+        companyInput.removeAttribute('required');
+    }
+}
+// Trigger initially to handle cached form states
+toggleRoleFields();
+</script>
+{% endblock %}

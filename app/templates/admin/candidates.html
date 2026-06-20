@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Candidates – HireAI{% endblock %}
+{% block page_header %}Registered Candidates{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Candidate Directory</h3>
+        <span class="badge badge-applied" style="background-color: var(--primary-glow); color: var(--primary-color);">Total: {{ candidates | length }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Candidate ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Education</th>
+                    <th>Experience</th>
+                    <th>Skills</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in candidates %}
+                    <tr>
+                        <td>#{{ c.candidate_id }}</td>
+                        <td><strong>{{ c.full_name }}</strong></td>
+                        <td>{{ c.email }}</td>
+                        <td>{{ c.degree or "N/A" }} {% if c.cgpa %}(CGPA: {{ c.cgpa }}){% endif %}</td>
+                        <td>{{ c.experience_years }} years</td>
+                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {% if c.skills %}
+                                {% for s in c.skills.split(',') %}
+                                    <span class="badge badge-applied" style="padding: 0.15rem 0.5rem; font-size: 0.7rem; margin-right: 0.25rem;">{{ s.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <em style="color: var(--text-muted);">Not provided</em>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-secondary);">{{ c.created_at.strftime('%Y-%m-%d') if c.created_at else "N/A" }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No candidates found in the system.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

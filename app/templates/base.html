@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HireAI – AI-Powered Recruitment Platform{% endblock %}</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- Chart.js (for Dashboards) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        {% if current_user %}
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-brain brand-logo" style="font-size: 1.5rem;"></i>
+                <span class="brand-logo">HireAI</span>
+            </div>
+            <ul class="sidebar-menu">
+                {% if current_user.role == 'admin' %}
+                    <li class="{% if active_tab == 'dashboard' %}active{% endif %}">
+                        <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Admin Dashboard</a>
+                    </li>
+                    <li class="{% if active_tab == 'recruiters' %}active{% endif %}">
+                        <a href="/admin/recruiters"><i class="fa-solid fa-building-user"></i> Recruiters</a>
+                    </li>
+                    <li class="{% if active_tab == 'candidates' %}active{% endif %}">
+                        <a href="/admin/candidates"><i class="fa-solid fa-users"></i> Candidates</a>
+                    </li>
+                {% elif current_user.role == 'recruiter' %}
+                    <li class="{% if active_tab == 'dashboard' %}active{% endif %}">
+                        <a href="/recruiter/dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="{% if active_tab == 'jobs' %}active{% endif %}">
+                        <a href="/recruiter/jobs"><i class="fa-solid fa-briefcase"></i> Manage Jobs</a>
+                    </li>
+                    <li class="{% if active_tab == 'post_job' %}active{% endif %}">
+                        <a href="/recruiter/jobs/new"><i class="fa-solid fa-circle-plus"></i> Post a Job</a>
+                    </li>
+                {% elif current_user.role == 'candidate' %}
+                    <li class="{% if active_tab == 'dashboard' %}active{% endif %}">
+                        <a href="/candidate/dashboard"><i class="fa-solid fa-chart-pie"></i> My Dashboard</a>
+                    </li>
+                    <li class="{% if active_tab == 'profile' %}active{% endif %}">
+                        <a href="/candidate/profile"><i class="fa-solid fa-user-tie"></i> Profile Details</a>
+                    </li>
+                    <li class="{% if active_tab == 'jobs' %}active{% endif %}">
+                        <a href="/jobs"><i class="fa-solid fa-magnifying-glass-briefcase"></i> Explore Jobs</a>
+                    </li>
+                {% endif %}
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/auth/logout" class="btn btn-danger btn-secondary" style="width: 100%; border: 1px solid rgba(244,63,94,0.3);">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Workspace -->
+        <div class="main-wrapper" style="{% if not current_user %}margin-left: 0; width: 100%;{% endif %}">
+            <!-- Top Navbar -->
+            <nav class="navbar">
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-grow: 1;">
+                    {% if current_user %}
+                    <button id="sidebarToggle" class="btn btn-secondary" style="display: none; padding: 0.5rem; width: 38px; height: 38px; border-radius: 0.375rem;">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    {% endif %}
+                    
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0; white-space: nowrap;">
+                        {% block page_header %}HireAI Platform{% endblock %}
+                    </h2>
+
+                    <!-- Global Search Placeholder (Recruiter/Admin SaaS Feel) -->
+                    {% if current_user %}
+                    <div style="position: relative; max-width: 320px; width: 100%; display: none; display: md-block; margin-left: 1rem;" class="nav-search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                        <input type="text" placeholder="Quick search candidate, jobs..." style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.25rem; border: 1px solid var(--border-color); border-radius: 0.5rem; font-size: 0.85rem; background-color: var(--bg-main); outline: none; transition: all 0.15s ease;" onfocus="this.style.borderColor='var(--primary-color)'; this.style.backgroundColor='#ffffff';" onblur="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='var(--bg-main)';">
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="nav-profile" style="flex-shrink: 0; display: flex; align-items: center; gap: 0.875rem;">
+                    {% if current_user %}
+                        <div class="profile-info" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25;">
+                            <span class="profile-name" style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">{{ current_user.name }}</span>
+                            <span class="profile-role" style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--primary-color); letter-spacing: 0.05em;">{{ current_user.role }}</span>
+                        </div>
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(37,99,235,0.15);">
+                            {{ current_user.name[0] | upper }}
+                        </div>
+                    {% else %}
+                        <a href="/login" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                        <a href="/register" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fa-solid fa-user-plus"></i> Register</a>
+                    {% endif %}
+                </div>
+            </nav>
+
+            <!-- Main Page Body -->
+            <main class="content-body">
+                <!-- Notifications/Errors -->
+                {% if request.query_params.get('error') %}
+                <div class="card" style="border-left: 4px solid var(--danger-color); padding: 1rem; margin-bottom: 1.5rem; background-color: var(--danger-bg);">
+                    <p style="color: var(--danger-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Error: {{ request.query_params.get('error') }}
+                    </p>
+                </div>
+                {% endif %}
+                {% if request.query_params.get('message') %}
+                <div class="card" style="border-left: 4px solid var(--success-color); padding: 1rem; margin-bottom: 1.5rem; background-color: var(--success-bg);">
+                    <p style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        {{ request.query_params.get('message') }}
+                    </p>
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Responsive sidebar script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('appSidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (toggle && sidebar) {
+                // Determine if we should show the toggle button (tablet/mobile screens)
+                const checkWidth = () => {
+                    if (window.innerWidth <= 992) {
+                        toggle.style.display = 'block';
+                    } else {
+                        toggle.style.display = 'none';
+                        sidebar.classList.remove('open');
+                    }
+                };
+                
+                window.addEventListener('resize', checkWidth);
+                checkWidth();
+                
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('open');
+                });
+                
+                // Close sidebar when clicking outside of it on mobile
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 992 && sidebar.classList.contains('open')) {
+                        if (!sidebar.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+                            sidebar.classList.remove('open');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

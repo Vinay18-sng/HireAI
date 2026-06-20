@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Login – HireAI{% endblock %}
+{% block page_header %}Portal Login{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to access your HireAI dashboard</p>
+        </div>
+        
+        <form action="/auth/login" method="POST">
+            {% if request.query_params.get('next') %}
+                <input type="hidden" name="next" value="{{ request.query_params.get('next') }}">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@company.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </button>
+        </form>
+        
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
+            <span style="color: var(--text-secondary);">New to the platform? </span>
+            <a href="/register">Create an account</a>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0 1.5rem;">
+        
+        <!-- Quick Login Demo Accounts -->
+        <div>
+            <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; text-align: center;">Demo Quick-Access</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('admin@hireai.com', 'admin123')" style="padding: 0.5rem; font-size: 0.825rem; width: 100%; display: flex; justify-content: space-between;">
+                    <span><i class="fa-solid fa-user-shield" style="color: var(--primary-color);"></i> Admin Account</span>
+                    <span style="color: var(--text-muted);">Click to Autofill</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('recruiter@hireai.com', 'recruiter123')" style="padding: 0.5rem; font-size: 0.825rem; width: 100%; display: flex; justify-content: space-between;">
+                    <span><i class="fa-solid fa-building-user" style="color: var(--info-color);"></i> Recruiter (Google)</span>
+                    <span style="color: var(--text-muted);">Click to Autofill</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="setDemo('candidate@hireai.com', 'candidate123')" style="padding: 0.5rem; font-size: 0.825rem; width: 100%; display: flex; justify-content: space-between;">
+                    <span><i class="fa-solid fa-graduation-cap" style="color: var(--success-color);"></i> Candidate (John Doe)</span>
+                    <span style="color: var(--text-muted);">Click to Autofill</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setDemo(email, password) {
+    document.getElementById('email').value = email;
+    document.getElementById('password').value = password;
+}
+</script>
+{% endblock %}

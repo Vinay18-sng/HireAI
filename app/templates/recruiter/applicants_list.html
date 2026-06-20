@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Applicants for {{ job.title }} – HireAI{% endblock %}
+{% block page_header %}Applicants: {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Filter and Search Applicants</h3>
+        <a href="/recruiter/jobs" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Jobs</a>
+    </div>
+    
+    <!-- Filter form -->
+    <form action="/recruiter/jobs/{{ job.job_id }}/applicants" method="GET" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <input type="text" name="search" value="{{ filters.search }}" class="form-control" placeholder="Search by name or skills...">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <select name="status_filter" class="form-control">
+                <option value="">-- All Statuses --</option>
+                <option value="Applied" {% if filters.status == 'Applied' %}selected{% endif %}>Applied</option>
+                <option value="Shortlisted" {% if filters.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                <option value="Selected" {% if filters.status == 'Selected' %}selected{% endif %}>Selected</option>
+                <option value="Rejected" {% if filters.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <select name="score_filter" class="form-control">
+                <option value="">-- All Scores --</option>
+                <option value="75+" {% if filters.score == '75+' %}selected{% endif %}>75% + (Recommended)</option>
+                <option value="50-74" {% if filters.score == '50-74' %}selected{% endif %}>50% - 74% (Consider)</option>
+                <option value="sub50" {% if filters.score == 'sub50' %}selected{% endif %}>Below 50% (Not Rec.)</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-filter"></i> Apply Filters
+        </button>
+    </form>
+</div>
+
+<!-- Comparison control floating card -->
+<div class="card" id="comparisonBar" style="display: none; padding: 1rem 1.5rem; background-color: rgba(37, 99, 235, 0.05); border-color: rgba(37, 99, 235, 0.2); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <span style="font-weight: 600;"><i class="fa-solid fa-scale-balanced" style="color: var(--primary-color);"></i> <span id="comparisonCount">0</span> Candidates Selected for Side-by-Side Comparison</span>
+    <button type="button" class="btn btn-primary btn-sm" onclick="triggerComparison()">
+        Compare Selected Candidates <i class="fa-solid fa-arrow-right"></i>
+    </button>
+</div>
+
+<!-- Applicants Table Card -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Ranked Applicant Pool</h3>
+        <span class="badge badge-shortlisted" style="font-weight: 700;">Ranked by Composite AI Score</span>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">Select</th>
+                    <th style="width: 60px; text-align: center;">Rank</th>
+                    <th>Candidate Name</th>
+                    <th>Exp.</th>
+                    <th>Education</th>
+                    <th style="text-align: center;">AI Fit Score</th>
+                    <th>Recommendation</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in applicants %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="candidate-select" value="{{ item.candidate.candidate_id }}" onchange="updateComparisonBar()" style="width: 18px; height: 18px; cursor: pointer;">
+                        </td>
+                        <td style="text-align: center;">
+                            {% if item.ai_score and item.ai_score.rank_position %}
+                                <div style="width: 28px; height: 28px; border-radius: 50%; background-color: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                    {{ item.ai_score.rank_position }}
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong><a href="/recruiter/candidate/{{ item.candidate.candidate_id }}/job/{{ job.job_id }}">{{ item.candidate.full_name }}</a></strong>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                {{ item.candidate.skills or "No skills listed" }}
+                            </p>
+                        </td>
+                        <td>{{ item.candidate.experience_years }} yrs</td>
+                        <td>{{ item.candidate.degree or "N/A" }}</td>
+                        <td style="text-align: center;">
+                            {% if item.ai_score %}
+                                <strong style="font-size: 1.1rem; color: {% if item.ai_score.final_score >= 75 %}var(--success-color){% elif item.ai_score.final_score >= 50 %}var(--warning-color){% else %}var(--danger-color){% endif %};">
+                                    {{ item.ai_score.final_score }}%
+                                </strong>
+                            {% else %}
+                                <span style="color: var(--text-muted);">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.ai_score %}
+                                {% if item.ai_score.recommendation == 'Recommended' %}
+                                    <span class="badge badge-recommended">Recommended</span>
+                                {% elif item.ai_score.recommendation == 'Consider' %}
+                                    <span class="badge badge-consider">Consider</span>
+                                {% else %}
+                                    <span class="badge badge-not-recommended">Not Recommended</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.application.status == 'Applied' %}
+                                <span class="badge badge-applied">Applied</span>
+                            {% elif item.application.status == 'Shortlisted' %}
+                                <span class="badge badge-shortlisted">Shortlisted</span>
+                            {% elif item.application.status == 'Selected' %}
+                                <span class="badge badge-selected">Selected</span>
+                            {% elif item.application.status == 'Rejected' %}
+                                <span class="badge badge-rejected">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/recruiter/candidate/{{ item.candidate.candidate_id }}/job/{{ job.job_id }}" class="btn btn-secondary btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Evaluate Profile
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                            No applicants found matching the filters.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateComparisonBar() {
+    const checkboxes = document.querySelectorAll('.candidate-select:checked');
+    const bar = document.getElementById('comparisonBar');
+    const countSpan = document.getElementById('comparisonCount');
+    
+    if (checkboxes.length > 0) {
+        bar.style.display = 'flex';
+        countSpan.innerText = checkboxes.length;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function triggerComparison() {
+    const checkboxes = document.querySelectorAll('.candidate-select:checked');
+    const ids = Array.from(checkboxes).map(cb => cb.value).join(',');
+    window.location.href = '/recruiter/jobs/{{ job.job_id }}/compare?candidate_ids=' + ids;
+}
+
+// Clear checks on back/nav cache
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.candidate-select').forEach(cb => cb.checked = false);
+    updateComparisonBar();
+});
+</script>
+{% endblock %}

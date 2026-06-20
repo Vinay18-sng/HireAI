@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Candidates – HireAI{% endblock %}
+{% block page_header %}Candidate Comparison Matrix{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Side-by-Side Comparison: {{ job.title }}</h3>
+        <a href="/recruiter/jobs/{{ job.job_id }}/applicants" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Applicants</a>
+    </div>
+    
+    <div class="comparison-container">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th class="comparison-row-header" style="font-weight: 700;">Metric / Attribute</th>
+                    {% for c_data in candidates %}
+                        <th style="text-align: center; min-width: 250px; background-color: rgba(37, 99, 235, 0.01);">
+                            <div style="font-size: 1.05rem; margin-bottom: 0.25rem; font-weight: 700; color: var(--text-primary);">
+                                {{ c_data.candidate.full_name }}
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">{{ c_data.candidate.email }}</span>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                
+                <!-- 1. AI Score -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-brain" style="color: var(--primary-color); margin-right: 0.5rem;"></i> AI Fit Score</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; vertical-align: middle;">
+                            {% if c_data.ai_score %}
+                                <div style="display: inline-block; padding: 0.5rem 1rem; border-radius: 0.5rem; background-color: rgba(37, 99, 235, 0.05); font-weight: 800; font-size: 1.25rem; color: {% if c_data.ai_score.final_score >= 75 %}var(--success-color){% elif c_data.ai_score.final_score >= 50 %}var(--warning-color){% else %}var(--danger-color){% endif %}; border: 1px solid var(--border-color);">
+                                    {{ c_data.ai_score.final_score }}%
+                                </div>
+                            {% else %}
+                                <span style="color: var(--text-muted);">Calcing...</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 2. Recommendation -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-thumbs-up" style="color: var(--info-color); margin-right: 0.5rem;"></i> Recommendation</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center;">
+                            {% if c_data.ai_score %}
+                                {% if c_data.ai_score.recommendation == 'Recommended' %}
+                                    <span class="badge badge-recommended" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Recommended</span>
+                                {% elif c_data.ai_score.recommendation == 'Consider' %}
+                                    <span class="badge badge-consider" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Consider</span>
+                                {% else %}
+                                    <span class="badge badge-not-recommended" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Not Recommended</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 3. Experience -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-briefcase" style="color: #64748b; margin-right: 0.5rem;"></i> Experience (Years)</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.candidate.experience_years }} years
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 4. Education -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-graduation-cap" style="color: #64748b; margin-right: 0.5rem;"></i> Education</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; line-height: 1.4;">
+                            <strong style="color: var(--text-primary);">{{ c_data.candidate.degree or "N/A" }}</strong>
+                            {% if c_data.candidate.cgpa %}
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem;">CGPA: {{ c_data.candidate.cgpa }}</p>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 5. Key Skills -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-code" style="color: #64748b; margin-right: 0.5rem;"></i> Key Skills</td>
+                    {% for c_data in candidates %}
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center;">
+                                {% if c_data.candidate.skills %}
+                                    {% for s in c_data.candidate.skills.split(',') %}
+                                        <span class="badge badge-applied" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">{{ s.strip() }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-style: italic;">No skills listed</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 6. Coding Score -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-keyboard" style="color: #64748b; margin-right: 0.5rem;"></i> Coding Score</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.assessment.coding_score if c_data.assessment else '0.0' }} / 100
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 7. Technical Interview -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-comments" style="color: #64748b; margin-right: 0.5rem;"></i> Technical Interview</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.assessment.technical_score if c_data.assessment else '0.0' }} / 100
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 8. Aptitude Score -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-brain" style="color: #64748b; margin-right: 0.5rem;"></i> Aptitude Score</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.assessment.aptitude_score if c_data.assessment else '0.0' }} / 100
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 9. HR Interview -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-user-check" style="color: #64748b; margin-right: 0.5rem;"></i> HR Score</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.assessment.hr_score if c_data.assessment else '0.0' }} / 100
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 10. Project Score -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-folder-open" style="color: #64748b; margin-right: 0.5rem;"></i> Project Review</td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; font-weight: 700; font-size: 1.05rem;">
+                            {{ c_data.assessment.project_score if c_data.assessment else '0.0' }} / 100
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 11. Certifications -->
+                <tr>
+                    <td class="comparison-row-header"><i class="fa-solid fa-certificate" style="color: #64748b; margin-right: 0.5rem;"></i> Certifications</td>
+                    {% for c_data in candidates %}
+                        <td style="padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); text-align: center; line-height: 1.4;">
+                            {{ c_data.candidate.certifications or "None listed" }}
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <!-- 12. Actions -->
+                <tr>
+                    <td class="comparison-row-header"></td>
+                    {% for c_data in candidates %}
+                        <td style="text-align: center; padding: 1.5rem;">
+                            <a href="/recruiter/candidate/{{ c_data.candidate.candidate_id }}/job/{{ job.job_id }}" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Evaluate Profile
+                            </a>
+                        </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

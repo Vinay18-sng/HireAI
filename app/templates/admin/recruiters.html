@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Recruiters – HireAI{% endblock %}
+{% block page_header %}Registered Recruiters{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Recruiter List</h3>
+        <span class="badge badge-applied" style="background-color: var(--primary-glow); color: var(--primary-color);">Total: {{ recruiters | length }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Recruiter ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Company Name</th>
+                    <th>Designation</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recruiters %}
+                    <tr>
+                        <td>#{{ r.recruiter_id }}</td>
+                        <td><strong>{{ r.user.name }}</strong></td>
+                        <td>{{ r.user.email }}</td>
+                        <td>{{ r.company_name }}</td>
+                        <td>{{ r.designation or "N/A" }}</td>
+                        <td style="color: var(--text-secondary);">{{ r.user.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recruiters found in the system.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

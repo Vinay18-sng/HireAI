@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Candidate – {{ candidate.full_name }}{% endblock %}
+{% block page_header %}Candidate Evaluation{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h3 style="font-size: 1.35rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-user-tie" style="color: var(--primary-color);"></i>
+        {{ candidate.full_name }}
+    </h3>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="/recruiter/candidate/{{ candidate.candidate_id }}/job/{{ job.job_id }}/report" target="_blank" class="btn btn-secondary">
+            <i class="fa-solid fa-print"></i> Generate Summary Report
+        </a>
+        <a href="/recruiter/jobs/{{ job.job_id }}/applicants" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Applicants
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start; margin-bottom: 2rem;">
+    
+    <!-- Left Column: Profile Details & Score Update -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Profile Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Professional Profile & Credentials</h3>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Email</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem;">{{ candidate.email }}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Phone</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem;">{{ candidate.phone or 'N/A' }}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Location</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem;">{{ candidate.location or 'N/A' }}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Highest Education</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem;">{{ candidate.degree or 'N/A' }} {% if candidate.cgpa %}(CGPA: {{ candidate.cgpa }}){% endif %}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Years of Experience</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem;">{{ candidate.experience_years }} years</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem; color: var(--text-muted);">Links</strong>
+                    <p style="font-size: 0.95rem; margin-top: 0.2rem; display: flex; gap: 1rem;">
+                        {% if candidate.github_link %}
+                            <a href="{{ candidate.github_link }}" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+                        {% endif %}
+                        {% if candidate.linkedin_link %}
+                            <a href="{{ candidate.linkedin_link }}" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1.25rem;">
+                <strong style="font-size: 0.85rem; color: var(--text-muted);">Skills</strong>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem;">
+                    {% if candidate.skills %}
+                        {% for s in candidate.skills.split(',') %}
+                            <span class="badge badge-applied">{{ s.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span style="color: var(--text-muted);">None listed</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1.25rem;">
+                <strong style="font-size: 0.85rem; color: var(--text-muted);">Certifications</strong>
+                <p style="font-size: 0.95rem; margin-top: 0.3rem;">{{ candidate.certifications or 'None listed' }}</p>
+            </div>
+            
+            <div>
+                <strong style="font-size: 0.85rem; color: var(--text-muted);">Projects Summary</strong>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.3rem; line-height: 1.5; white-space: pre-line;">{{ candidate.projects or 'No projects listed.' }}</p>
+            </div>
+        </div>
+
+        <!-- Score Input Form -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Assessment Scoring Panel</h3>
+            </div>
+            <form action="/recruiter/candidate/{{ candidate.candidate_id }}/job/{{ job.job_id }}/scores" method="POST">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label for="coding_score">Coding Score</label>
+                        <input type="number" step="0.1" min="0" max="100" id="coding_score" name="coding_score" value="{{ assessment.coding_score }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="aptitude_score">Aptitude Score</label>
+                        <input type="number" step="0.1" min="0" max="100" id="aptitude_score" name="aptitude_score" value="{{ assessment.aptitude_score }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="technical_score">Technical Int.</label>
+                        <input type="number" step="0.1" min="0" max="100" id="technical_score" name="technical_score" value="{{ assessment.technical_score }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hr_score">HR Int. Score</label>
+                        <input type="number" step="0.1" min="0" max="100" id="hr_score" name="hr_score" value="{{ assessment.hr_score }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project_score">Project Score</label>
+                        <input type="number" step="0.1" min="0" max="100" id="project_score" name="project_score" value="{{ assessment.project_score }}" class="form-control" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="float: right; margin-top: 1rem;">
+                    <i class="fa-solid fa-calculator"></i> Save Scores & Recalculate Fit
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Right Column: AI Score Summary, Status Workflow, Notes -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+               <!-- AI Fit Score Summary -->
+        <div class="card" style="text-align: center; padding: 2rem; border-color: rgba(37, 99, 235, 0.15); background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--bg-card);">
+            <div class="score-circle-wrapper {% if ai_score.final_score >= 75 %}score-high{% elif ai_score.final_score >= 50 %}score-mid{% else %}score-low{% endif %}" style="width: 90px; height: 90px; margin: 0 auto 1.5rem; font-size: 1.75rem; border-width: 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800;">
+                {{ ai_score.final_score }}%
+            </div>
+            
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Composite AI Fit Score</h3>
+            
+            <div style="margin-bottom: 1rem;">
+                {% if ai_score.recommendation == 'Recommended' %}
+                    <span class="badge badge-recommended" style="font-size: 0.85rem; padding: 0.35rem 1rem;">Recommended</span>
+                {% elif ai_score.recommendation == 'Consider' %}
+                    <span class="badge badge-consider" style="font-size: 0.85rem; padding: 0.35rem 1rem;">Consider</span>
+                {% else %}
+                    <span class="badge badge-not-recommended" style="font-size: 0.85rem; padding: 0.35rem 1rem;">Not Recommended</span>
+                {% endif %}
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;">
+            
+            <div style="text-align: left; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-secondary);">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Skill Match:</span>
+                    <strong style="color: var(--text-primary);">{{ ai_score.skill_match_score }}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Exp Match:</span>
+                    <strong style="color: var(--text-primary);">{{ ai_score.experience_score }}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Edu Match:</span>
+                    <strong style="color: var(--text-primary);">{{ ai_score.education_score }}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>ML Predictive Score:</span>
+                    <strong style="color: var(--primary-color);">{{ ai_score.ml_score }}%</strong>
+                </div>
+                {% if ai_score.rank_position %}
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-color); padding-top: 0.4rem; font-weight: 600; color: var(--text-primary);">
+                        <span>Rank Position:</span>
+                        <span>#{{ ai_score.rank_position }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Application Status Workflow -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Application Status</h3>
+            </div>
+            <form action="/recruiter/candidate/{{ candidate.candidate_id }}/job/{{ job.job_id }}/status" method="POST">
+                <div class="form-group">
+                    <label for="status">Change Workflow State</label>
+                    <select id="status" name="status" class="form-control" required>
+                        <option value="Applied" {% if application.status == 'Applied' %}selected{% endif %}>Applied</option>
+                        <option value="Shortlisted" {% if application.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                        <option value="Selected" {% if application.status == 'Selected' %}selected{% endif %}>Selected</option>
+                        <option value="Rejected" {% if application.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                    <i class="fa-solid fa-circle-notch"></i> Update State
+                </button>
+            </form>
+        </div>
+
+        <!-- Resume File Access Card -->
+        {% if candidate.resume_path %}
+            <div class="card" style="border-left: 4px solid var(--success-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem;"><i class="fa-regular fa-file-pdf" style="color: var(--success-color);"></i> Resume Document</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Uploaded by candidate</span>
+                    </div>
+                    <a href="{{ candidate.resume_path }}" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-download"></i> View
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Recruiter Notes -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recruiter Evaluator Notes</h3>
+            </div>
+            
+            <!-- Note Form -->
+            <form action="/recruiter/candidate/{{ candidate.candidate_id }}/job/{{ job.job_id }}/note" method="POST" style="margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <textarea name="note_text" class="form-control" placeholder="Add an interview summary, feedback or selection rationale..." style="min-height: 80px;" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm" style="float: right;">
+                    <i class="fa-solid fa-paper-plane"></i> Save Note
+                </button>
+            </form>
+            
+            <!-- Notes List -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 0.25rem; clear: both;">
+                {% for note in notes %}
+                    <div style="background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.85rem;">
+                        <p style="color: var(--text-secondary); line-height: 1.4; white-space: pre-wrap;">{{ note.note_text }}</p>
+                        <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 0.4rem; text-align: right;">{{ note.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 1rem 0;">No notes added yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

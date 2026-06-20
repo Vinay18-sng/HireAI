@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile – HireAI{% endblock %}
+{% block page_header %}My Professional Profile{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: start;">
+    
+    <!-- Left Sidebar: Profile Summary & Resume Upload -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Profile Completed completion card -->
+        <div class="card" style="text-align: center; padding: 2rem;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.75rem; margin: 0 auto 1rem;">
+                {{ current_user.name[0] | upper }}
+            </div>
+            <h3 style="font-size: 1.25rem;">{{ current_user.name }}</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">{{ candidate.email }}</p>
+            
+            <span class="badge badge-applied" style="background-color: var(--primary-glow); color: var(--primary-color); text-transform: uppercase; font-size: 0.7rem; font-weight: 700;">
+                Candidate Account
+            </span>
+        </div>
+
+        <!-- Resume Upload card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Resume Document</h3>
+            </div>
+            
+            {% if candidate.resume_path %}
+                <div style="background-color: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fa-solid fa-file-pdf" style="font-size: 1.5rem; color: var(--success-color);"></i>
+                    <div style="overflow: hidden;">
+                        <p style="font-size: 0.85rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">Resume Document</p>
+                        <a href="{{ candidate.resume_path }}" target="_blank" class="btn-outline-primary" style="font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.2rem;"><i class="fa-solid fa-cloud-arrow-down"></i> View/Download File</a>
+                    </div>
+                </div>
+            {% else %}
+                <div style="border: 1px dashed var(--border-color); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-file-circle-xmark" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; color: var(--text-muted);"></i>
+                    No resume document uploaded yet.
+                </div>
+            {% endif %}
+            
+            <form action="/candidate/profile/resume" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="resume">Upload New Resume (PDF / Word)</label>
+                    <input type="file" id="resume" name="resume" class="form-control" accept=".pdf,.docx,.doc" style="padding: 0.4rem;" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;">
+                    <i class="fa-solid fa-file-arrow-up"></i> Upload Document
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Right side: Profile Details Edit Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Edit Profile Information</h3>
+        </div>
+        
+        <form action="/candidate/profile/edit" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" value="{{ candidate.phone or '' }}" class="form-control" placeholder="+1 (555) 123-4567">
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location (City, Country)</label>
+                    <input type="text" id="location" name="location" value="{{ candidate.location or '' }}" class="form-control" placeholder="San Francisco, USA">
+                </div>
+                
+                <div class="form-group">
+                    <label for="degree">Highest Degree / Education</label>
+                    <input type="text" id="degree" name="degree" value="{{ candidate.degree or '' }}" class="form-control" placeholder="B.S. in Computer Science" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cgpa">CGPA (or Grade Equivalent)</label>
+                    <input type="number" id="cgpa" name="cgpa" step="0.01" min="0" max="10" value="{{ candidate.cgpa or '' }}" class="form-control" placeholder="8.50" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="experience_years">Years of Experience</label>
+                    <input type="number" id="experience_years" name="experience_years" min="0" max="50" value="{{ candidate.experience_years or 0 }}" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="github_link">GitHub Link</label>
+                    <input type="url" id="github_link" name="github_link" value="{{ candidate.github_link or '' }}" class="form-control" placeholder="https://github.com/username">
+                </div>
+                
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="linkedin_link">LinkedIn Link</label>
+                    <input type="url" id="linkedin_link" name="linkedin_link" value="{{ candidate.linkedin_link or '' }}" class="form-control" placeholder="https://linkedin.com/in/username">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="skills">Technical Skills (Comma separated list)</label>
+                <input type="text" id="skills" name="skills" value="{{ candidate.skills or '' }}" class="form-control" placeholder="Python, FastAPI, SQL, Docker, React" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="certifications">Certifications (Comma separated list)</label>
+                <input type="text" id="certifications" name="certifications" value="{{ candidate.certifications or '' }}" class="form-control" placeholder="AWS Certified Solutions Architect, Google Cloud Professional">
+            </div>
+            
+            <div class="form-group">
+                <label for="projects">Key Projects Summary</label>
+                <textarea id="projects" name="projects" class="form-control" placeholder="Describe your key projects, accomplishments, and technologies used..." style="min-height: 120px;">{{ candidate.projects or '' }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="float: right;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
