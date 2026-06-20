@@ -26,6 +26,20 @@ async def auth_redirect_exception_handler(request: Request, exc: AuthRedirectExc
 def startup_event():
     Base.metadata.create_all(bind=engine)
     print("Database tables initialized successfully.")
+    
+    # Ensure uploads directory exists
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    upload_dir = os.path.join(base_dir, "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
+    print(f"Uploads directory verified at: {upload_dir}")
+
+    # Auto-seed if database is empty and auto-seeding is enabled
+    if os.getenv("AUTO_SEED", "true").lower() == "true":
+        try:
+            from seed import auto_seed_if_empty
+            auto_seed_if_empty()
+        except Exception as e:
+            print(f"Auto-seeding skipped or failed: {e}")
 
 # Mount Static Files
 static_path = os.path.join(os.path.dirname(__file__), "static")
@@ -33,7 +47,8 @@ os.makedirs(static_path, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 # Templates Configuration
-templates = Jinja2Templates(directory="app/templates")
+templates_path = os.path.join(os.path.dirname(__file__), "templates")
+templates = Jinja2Templates(directory=templates_path)
 
 # Include Routers
 app.include_router(auth_routes.router)

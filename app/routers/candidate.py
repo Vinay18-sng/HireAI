@@ -9,7 +9,8 @@ from app import models, schemas, crud, auth
 
 router = APIRouter(prefix="/candidate", tags=["candidate"])
 
-templates = Jinja2Templates(directory="app/templates")
+templates_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
+templates = Jinja2Templates(directory=templates_path)
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uploads"))
 
 @router.get("/dashboard")

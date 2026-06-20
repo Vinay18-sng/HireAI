@@ -6,9 +6,12 @@ from typing import Optional
 from app.database import get_db
 from app import models, crud, auth
 
+import os
+
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
-templates = Jinja2Templates(directory="app/templates")
+templates_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
+templates = Jinja2Templates(directory=templates_path)
 
 @router.get("")
 async def browse_jobs(

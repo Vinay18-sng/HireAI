@@ -5,9 +5,12 @@ from sqlalchemy import func
 from app.database import get_db
 from app import models, crud, auth
 
+import os
+
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-templates = Jinja2Templates(directory="app/templates")
+templates_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
+templates = Jinja2Templates(directory=templates_path)
 
 @router.get("/dashboard")
 async def admin_dashboard(

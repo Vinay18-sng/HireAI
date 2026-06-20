@@ -7,9 +7,12 @@ from typing import List, Optional
 from app.database import get_db
 from app import models, schemas, crud, auth, utils
 
+import os
+
 router = APIRouter(prefix="/recruiter", tags=["recruiter"])
 
-templates = Jinja2Templates(directory="app/templates")
+templates_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates")
+templates = Jinja2Templates(directory=templates_path)
 
 @router.get("/dashboard")
 async def recruiter_dashboard(
